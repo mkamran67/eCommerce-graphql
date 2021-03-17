@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import Page from '../components/Page';
 
 export default function MyApp({ Component, pageProps }) {
@@ -8,4 +7,3 @@ export default function MyApp({ Component, pageProps }) {
     </Page>
   );
 }
-
