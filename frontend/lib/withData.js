@@ -5,9 +5,12 @@ import { createUploadLink } from 'apollo-upload-client';
 import withApollo from 'next-with-apollo';
 import { endpoint, prodEndpoint } from '../config';
 
+// Apollo Boost -- Cannot upload images with Apollo Boost
+
 function createClient({ headers, initialState }) {
   return new ApolloClient({
     link: ApolloLink.from([
+      // Apollo Errors
       onError(({ graphQLErrors, networkError }) => {
         if (graphQLErrors)
           graphQLErrors.forEach(({ message, locations, path }) =>
