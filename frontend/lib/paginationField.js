@@ -37,7 +37,6 @@ export default function paginationField() {
       // if there are items, just return them from the cache ❌ -> NO network request
 
       if (items.length) {
-        console.log(`There are ${items.length}`);
         return items;
       }
 
