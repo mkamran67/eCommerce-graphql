@@ -1,9 +1,14 @@
 import { useMutation } from '@apollo/client';
 import DELETE_PRODUCT_MUTATION from '../lib/DeleteItemMutation';
 
+function update(cache, payload) {
+  cache.evict(cache.identify(payload.data.deleteProduct));
+}
+
 export default function DeleteProduct({ id, children }) {
   const [deleteProduct, { loading }] = useMutation(DELETE_PRODUCT_MUTATION, {
     variables: { id },
+    update,
   });
   return (
     <button
