@@ -1,63 +1,64 @@
 import gql from 'graphql-tag';
-import { useMutation } from '@apollo/client';
+import { useLazyQuery, useMutation } from '@apollo/client';
 import Form from './styles/Form';
 import useForm from '../lib/useForm';
-import { CURRENT_USER_QUERY } from './User';
 import DisplayError from './ErrorMessage';
+import USER_EMAIL_QUERY from '../lib/CheckUserQuery';
 
-const SIGNUP_MUTATION = gql`
-  mutation SIGNUP_MUTATION(
-    $email: String!
-    $name: String!
-    $password: String!
-  ) {
-    createUser(data: { email: $email, name: $name, password: $password }) {
-      id
-      name
-      email
+const REQUEST_RESET_MUTATION = gql`
+  mutation REQUEST_RESET_MUTATION($email: String!) {
+    sendUserPasswordResetLink(email: $email) {
+      message
+      code
     }
   }
 `;
 
-export default function SignUp() {
+export default function RequestReset() {
   const { inputs, handleChange, resetForm } = useForm({
     email: '',
-    name: '',
-    password: '',
   });
 
-  const [signup, { data, error, loading }] = useMutation(SIGNUP_MUTATION, {
+  const [
+    checkUser,
+    { data: userData, error: userError, loading: userLoading },
+  ] = useLazyQuery(USER_EMAIL_QUERY, {
     variables: inputs,
-    // Refetch the currently logged in user
-    // refetchQueries: [{ query: CURRENT_USER_QUERY }],
   });
+
+  const [resetPass, { data, error, loading }] = useMutation(
+    REQUEST_RESET_MUTATION,
+    {
+      variables: inputs,
+    }
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    await checkUser();
+
     // Send email to GraphQL API
-    await signup().catch(console.error);
-    resetForm();
+    if (userData?.allUsers?.length === 1) {
+      await resetPass().catch(console.error);
+      resetForm();
+    }
   };
 
   return (
     <Form method="POST" onSubmit={handleSubmit}>
-      <h2>Sign Up</h2>
+      <h2>Request a Password Reset</h2>
       <DisplayError error={error} />
       <fieldset>
-        {data?.createUser && (
-          <p> Signed up with {data.createUser.email} - You can now Sign In!</p>
+        {data?.sendUserPasswordResetLink === null && (
+          <p>
+            Success! <br /> Check your email for a link!
+          </p>
         )}
-        <label htmlFor="name">
-          Name
-          <input
-            type="text"
-            name="name"
-            placeholder="Your Name"
-            autoComplete="name"
-            value={inputs.name}
-            onChange={handleChange}
-          />
-        </label>
+        {userData?.allUsers?.length === 0 && (
+          <p>
+            Failed 😞 <br /> We did not find a user with this email.
+          </p>
+        )}
         <label htmlFor="email">
           Email
           <input
@@ -69,18 +70,7 @@ export default function SignUp() {
             onChange={handleChange}
           />
         </label>
-        <label htmlFor="password">
-          Password
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            autoComplete="password"
-            value={inputs.password}
-            onChange={handleChange}
-          />
-        </label>
-        <button type="submit">Sign In</button>
+        <button type="submit">Request Reset</button>
       </fieldset>
     </Form>
   );

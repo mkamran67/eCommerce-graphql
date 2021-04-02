@@ -24,7 +24,14 @@ const { withAuth } = createAuth({
   secretField: 'password',
   initFirstItem: {
     fields: ['name', 'email', 'password'],
-    // TODO: Add ion initial roles here
+    // TODO: Add in initial roles here
+  },
+  // protectIdentities: false, // Turned off default is True -> Prevents Auth Codes
+  // This allows us to enable a mutation for reset email (token for reset)
+  passwordResetLink: {
+    sendToken(args) {
+      console.log(args);
+    },
   },
 });
 
