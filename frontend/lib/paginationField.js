@@ -57,8 +57,6 @@ export default function paginationField() {
         merged[i] = incoming[i - skip];
       }
 
-      console.log(merged);
-
       // After incoming items are merged we return them. Apollo WILL now go back to read and repeat that.
       return merged;
     },
