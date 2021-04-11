@@ -1,9 +1,9 @@
 import gql from 'graphql-tag';
-import { useLazyQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import Form from './styles/Form';
 import useForm from '../lib/useForm';
 import DisplayError from './ErrorMessage';
-import USER_EMAIL_QUERY from '../lib/CheckUserQuery';
+// import USER_EMAIL_QUERY from '../lib/CheckUserQuery';
 
 const REQUEST_RESET_MUTATION = gql`
   mutation REQUEST_RESET_MUTATION($email: String!) {
@@ -19,13 +19,6 @@ export default function RequestReset() {
     email: '',
   });
 
-  const [
-    checkUser,
-    { data: userData, error: userError, loading: userLoading },
-  ] = useLazyQuery(USER_EMAIL_QUERY, {
-    variables: inputs,
-  });
-
   const [resetPass, { data, error, loading }] = useMutation(
     REQUEST_RESET_MUTATION,
     {
@@ -35,13 +28,8 @@ export default function RequestReset() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await checkUser();
-
-    // Send email to GraphQL API
-    if (userData?.allUsers?.length === 1) {
-      await resetPass().catch(console.error);
-      resetForm();
-    }
+    resetPass().catch(console.error);
+    resetForm();
   };
 
   return (
@@ -52,11 +40,6 @@ export default function RequestReset() {
         {data?.sendUserPasswordResetLink === null && (
           <p>
             Success! <br /> Check your email for a link!
-          </p>
-        )}
-        {userData?.allUsers?.length === 0 && (
-          <p>
-            Failed 😞 <br /> We did not find a user with this email.
           </p>
         )}
         <label htmlFor="email">

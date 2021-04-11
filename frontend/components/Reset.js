@@ -1,13 +1,20 @@
 import gql from 'graphql-tag';
-import { useLazyQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import Form from './styles/Form';
 import useForm from '../lib/useForm';
 import DisplayError from './ErrorMessage';
-import USER_EMAIL_QUERY from '../lib/CheckUserQuery';
 
-const REQUEST_RESET_MUTATION = gql`
-  mutation REQUEST_RESET_MUTATION($email: String!) {
-    sendUserPasswordResetLink(email: $email) {
+const RESET_MUTATION = gql`
+  mutation RESET_MUTATION(
+    $email: String!
+    $password: String!
+    $token: String!
+  ) {
+    redeemUserPasswordResetToken(
+      email: $email
+      token: $token
+      password: $password
+    ) {
       message
       code
     }
@@ -18,46 +25,32 @@ export default function Reset() {
   const { inputs, handleChange, resetForm } = useForm({
     email: '',
     password: '',
+    token: '',
   });
 
-  const [
-    checkUser,
-    { data: userData, error: userError, loading: userLoading },
-  ] = useLazyQuery(USER_EMAIL_QUERY, {
+  const [resetPass, { data, error, loading }] = useMutation(RESET_MUTATION, {
     variables: inputs,
   });
 
-  const [resetPass, { data, error, loading }] = useMutation(
-    REQUEST_RESET_MUTATION,
-    {
-      variables: inputs,
-    }
-  );
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await checkUser();
-
-    // Send email to GraphQL API
-    if (userData?.allUsers?.length === 1) {
-      await resetPass().catch(console.error);
-      resetForm();
-    }
+    console.log(`reseting password`);
+    await resetPass().catch(console.error);
+    resetForm();
   };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <Form method="POST" onSubmit={handleSubmit}>
       <h2>Reset your Password</h2>
       <DisplayError error={error} />
       <fieldset>
-        {data?.sendUserPasswordResetLink === null && (
+        {data?.redeemUserPasswordResetToken === null && (
           <p>
             Success! <br /> Check your email for a link!
-          </p>
-        )}
-        {userData?.allUsers?.length === 0 && (
-          <p>
-            Failed 😞 <br /> We did not find a user with this email.
           </p>
         )}
         <label htmlFor="email">

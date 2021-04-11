@@ -5,7 +5,7 @@ export default function ResetPage({ query }) {
   if (!query?.token) {
     return (
       <>
-        <p>Hey! You don't have a token try try this...</p>
+        <p>Hey! You don't have a token to try this...</p>
         <RequestReset />
       </>
     );
