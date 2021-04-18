@@ -9,6 +9,7 @@ import { User } from './schemas/User';
 import { Product } from './schemas/Product';
 import { ProductImage } from './schemas/ProductImage';
 import { insertSeedData } from './seed-data';
+import { sendPasswordResetEmail } from './lib/mail';
 
 const databseURL = process.env.DATABASE_URL || 'enter mongo url';
 
@@ -29,8 +30,8 @@ const { withAuth } = createAuth({
   // protectIdentities: false, // Turned off default is True -> Prevents Auth Codes
   // This allows us to enable a mutation for reset email (token for reset)
   passwordResetLink: {
-    sendToken(args) {
-      console.log(args);
+    async sendToken(args) {
+      await sendPasswordResetEmail(args.token, args.identity);
     },
   },
 });
