@@ -12,8 +12,8 @@ const RESET_MUTATION = gql`
   ) {
     redeemUserPasswordResetToken(
       email: $email
-      token: $token
       password: $password
+      token: $token
     ) {
       message
       code
@@ -21,20 +21,28 @@ const RESET_MUTATION = gql`
   }
 `;
 
-export default function Reset() {
+export default function Reset({ token }) {
   const { inputs, handleChange, resetForm } = useForm({
     email: '',
     password: '',
     token: '',
   });
 
-  const [resetPass, { data, error, loading }] = useMutation(RESET_MUTATION, {
+  const [resetPass, { data, loading, error }] = useMutation(RESET_MUTATION, {
     variables: inputs,
   });
+
+  const successfulError = data?.redeemUserPasswordResetToken?.code
+    ? {
+        error: data?.redeemUserPasswordResetToken?.code,
+        message: data?.redeemUserPasswordResetToken?.message,
+      }
+    : undefined;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(`reseting password`);
+    inputs.token = token;
     await resetPass().catch(console.error);
     resetForm();
   };
@@ -46,7 +54,7 @@ export default function Reset() {
   return (
     <Form method="POST" onSubmit={handleSubmit}>
       <h2>Reset your Password</h2>
-      <DisplayError error={error} />
+      <DisplayError error={error || successfulError} />
       <fieldset>
         {data?.redeemUserPasswordResetToken === null && (
           <p>
